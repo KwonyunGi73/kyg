@@ -4,6 +4,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
+import time
 
 # === 1. Appium 설정 ===
 options = UiAutomator2Options()
@@ -45,8 +46,50 @@ def handle_permission_popup():
         print("[권한 팝업 없음] 진행 계속")
     return False
 
+# === (추가) accessibility id로 클릭하는 함수 ===
+def click_if_accessibility_id_exists(accessibility_id, timeout=3):
+    """accessibility id로 요소 찾고 클릭"""
+    try:
+        element = WebDriverWait(driver, timeout).until(
+            EC.presence_of_element_located(('accessibility id', accessibility_id))
+        )
+        element.click()
+        print(f"[클릭 완료] '{accessibility_id}'")
+        return True
+    except TimeoutException:
+        print(f"[요소 없음] '{accessibility_id}'")
+        return False
+
 # === 4. 실행 ===
 handle_permission_popup()
+
+# 1) 검색 버튼 (Search YouTube) 클릭
+click_if_accessibility_id_exists("Search YouTube")
+
+# 2) 검색어 입력창(EditText) 찾아서 입력
+try:
+    search_input = WebDriverWait(driver, 10).until(
+        EC.presence_of_element_located((By.CLASS_NAME, "android.widget.EditText"))
+    )
+    search_input.send_keys("고재영")
+    print("[검색어 입력 완료] 고재영")
+
+    # 3) 키보드에서 Enter 키 입력 (검색 실행)
+    driver.press_keycode(66)  # KEYCODE_ENTER
+    print("[Enter 입력 완료] 검색 실행됨")
+except TimeoutException:
+    print("[검색 입력창 없음] 검색 실패")
+
+try:
+    # "View Channel" 버튼을 기다렸다가 클릭
+    view_channel = WebDriverWait(driver, 5).until(
+        EC.presence_of_element_located(('accessibility id', 'View Channel'))
+    )
+    view_channel.click()
+    print("[채널 클릭 완료] View Channel")
+except TimeoutException:
+    print("[오류] 'View Channel' 요소를 찾을 수 없음")
+
 
 #  여기에 추가 자동화 로직 작성 
 # 예시:
