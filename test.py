@@ -5,6 +5,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 import time
+import re
 
 # === 1. Appium 설정 ===
 options = UiAutomator2Options()
@@ -91,8 +92,49 @@ except TimeoutException:
     print("[오류] 'View Channel' 요소를 찾을 수 없음")
 
 
-#  여기에 추가 자동화 로직 작성 
-# 예시:
-# click_if_element_exists(By.ID, "com.google.android.youtube:id/some_button")
+try:
+    # === [1차 확인] "고재영"이 포함된 채널 확인 ===
+    WebDriverWait(driver, 5).until(
+        EC.presence_of_element_located((By.XPATH, "//android.view.ViewGroup[contains(@content-desc, '고재영')]"))
+    )
+    print("✅ [1차 확인] 고재영 관련 채널로 진입했습니다.")
+
+    # 1차 확인이 성공하면 2차 확인 진행
+    try:
+        # === [2차 확인] 채널 확인 ===
+        # 여기서는 Verified 포함된 요소를 확인
+        verified_badge = WebDriverWait(driver, 5).until(
+            EC.presence_of_element_located((By.XPATH, "//android.widget.ImageView[contains(@content-desc, 'Verified')]"))
+        )
+        print("✅ [2차 확인] 고재영 채널의 확인됨.")
+    
+    except TimeoutException:
+        # 2차 확인 실패 시, 코드 실행은 되지만 메시지를 출력
+        print("❌ [2차 확인 실패] 고재영 채널의 확인할 수 없습니다.")
+
+except TimeoutException:
+    # 1차 확인 실패 시, 이후 2차 확인을 진행하지 않고 바로 종료
+    print("❌ [오류] 고재영 채널에 진입하지 못했습니다.")
+
+
+try:
+    # 첫 번째 영상 클릭 (영상 리스트 중 첫 번째 ViewGroup)
+    first_video = WebDriverWait(driver, 5).until(
+        EC.presence_of_element_located((By.XPATH, "(//android.view.ViewGroup[contains(@content-desc, 'Go to channel')])[1]"))
+    )
+    first_video.click()
+    print("✅ [클릭 완료] 첫 번째 영상 클릭됨")
+except TimeoutException:
+    print("❌ [오류] 첫 번째 영상을 찾을 수 없습니다.")
+    
+try:
+    close_ad = WebDriverWait(driver, 5).until(
+        EC.presence_of_element_located((By.XPATH, "//android.widget.ImageView[@content-desc='Close ad panel']"))
+    )
+    close_ad.click()
+    print("✅ [광고 닫기 완료] 광고가 감지되어 닫았습니다.")
+except TimeoutException:
+    print("ℹ️ [광고 없음] 광고가 감지되지 않았습니다.")
+
 
 print("▶ YouTube 자동화 시작")
