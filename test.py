@@ -4,6 +4,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
+from appium.webdriver.common.appiumby import AppiumBy
 import time
 import re
 
@@ -11,7 +12,7 @@ import re
 options = UiAutomator2Options()
 options.platform_name = 'Android'
 options.device_name = 'emulator-5554'
-options.platform_version = '15.0'
+options.platform_version = '13.0'
 options.automation_name = 'uiautomator2'
 options.app_package = 'com.google.android.youtube'
 options.app_activity = 'com.google.android.youtube.HomeActivity'
@@ -64,8 +65,16 @@ def click_if_accessibility_id_exists(accessibility_id, timeout=3):
 # === 4. 실행 ===
 handle_permission_popup()
 
-# 1) 검색 버튼 (Search YouTube) 클릭
-click_if_accessibility_id_exists("Search YouTube")
+# 1) 검색 버튼 클릭 (XPath 사용)
+try:
+    search_button = WebDriverWait(driver, 5).until(
+        EC.element_to_be_clickable((By.XPATH, "//android.widget.ImageView[@content-desc='Search']"))
+    )
+    search_button.click()
+    print("✅ [검색 버튼 클릭 완료] XPath로 클릭됨")
+except TimeoutException:
+    print("❌ [오류] 검색 버튼을 찾을 수 없음 (XPath)")
+
 
 # 2) 검색어 입력창(EditText) 찾아서 입력
 try:
@@ -135,6 +144,23 @@ try:
     print("✅ [광고 닫기 완료] 광고가 감지되어 닫았습니다.")
 except TimeoutException:
     print("ℹ️ [광고 없음] 광고가 감지되지 않았습니다.")
+
+like_button = driver.find_element(By.XPATH, "//android.view.ViewGroup[contains(@content-desc, 'like this video')]")
+like_button.click()
+print("✅ 좋아요 누르기 완료")
+
+time.sleep(1.5)
+
+# "android.view.ViewGroup"을 포함한 노드를 찾아 클릭
+try:
+    comment_button = WebDriverWait(driver, 10).until(
+        EC.element_to_be_clickable((By.XPATH, "//android.view.ViewGroup[contains(@content-desc, 'android.view.ViewGroup')]"))
+    )
+    comment_button.click()
+    print("✅ 댓글 영역 열기 클릭 성공")
+except Exception as e:
+    print(f"❌ 댓글 영역 클릭 실패: {e}")
+
 
 
 print("▶ YouTube 자동화 시작")
