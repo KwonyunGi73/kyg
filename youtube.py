@@ -149,18 +149,5 @@ like_button = driver.find_element(By.XPATH, "//android.view.ViewGroup[contains(@
 like_button.click()
 print("✅ 좋아요 누르기 완료")
 
-time.sleep(1.5)
-
-# "android.view.ViewGroup"을 포함한 노드를 찾아 클릭
-try:
-    comment_button = WebDriverWait(driver, 10).until(
-        EC.element_to_be_clickable((By.XPATH, "//android.view.ViewGroup[contains(@content-desc, 'android.view.ViewGroup')]"))
-    )
-    comment_button.click()
-    print("✅ 댓글 영역 열기 클릭 성공")
-except Exception as e:
-    print(f"❌ 댓글 영역 클릭 실패: {e}")
-
-
 
 print("▶ YouTube 자동화 시작")
