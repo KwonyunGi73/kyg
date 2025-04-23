@@ -1,0 +1,5 @@
+{
+    "python.analysis.extraPaths": [
+        "./Pillow/build/lib.macosx-10.13-universal2-cpython-314"
+    ]
+}
