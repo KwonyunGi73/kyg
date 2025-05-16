@@ -1,6 +1,6 @@
 from appium import webdriver
 from appium.webdriver.common.appiumby import AppiumBy
-from appium.options.android import UiAutomator2Options
+from appium.options.android import UiAutomator2Options # type: ignore
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -20,8 +20,9 @@ def main():
     options.app_wait_activity = '*.*'
     options.no_reset = True
 
-    driver = webdriver.Remote("http://localhost:4723/wd/hub", options=options)
+    driver = webdriver.Remote("http://localhost:4723", options=options)
     driver.implicitly_wait(5)
+
 
     try:
         # 1. 조건부 팝업 닫기
