@@ -4,6 +4,14 @@ from appium.options.android import UiAutomator2Options
 from selenium.common.exceptions import NoSuchElementException
 from time import sleep
 
+def click_deny_permission(driver):
+    try:
+        deny_btn = driver.find_element("xpath", '//android.widget.Button[@resource-id="com.android.permissioncontroller:id/permission_deny_button"]')
+        deny_btn.click()
+        print("알림팝업 -> 허용안함 클릭")
+    except Exception as e:
+        print("알림팝업 미노출", e)
+
 def handle_first_popup(driver):
     try:
         # 위치 권한 팝업 체크박스
@@ -45,12 +53,7 @@ def click_look_around(driver):
     except NoSuchElementException:
         print('"둘러보기" 버튼 미노출, 다음 흐름 진행')
 
-        sleep(10)
-        print("Sleep start")
-        sleep(10)
-        print("Sleep end")
-
-
+"""
 def click_button(driver):
     try:
         btn = driver.find_element(AppiumBy.XPATH, '//androidx.compose.ui.platform.ComposeView/android.view.View/android.view.View/android.view.View[2]/android.widget.Button')
@@ -60,7 +63,7 @@ def click_button(driver):
         print("버튼을 찾을 수 없습니다.")
 
         sleep(10)
-
+"""
 def click_search_by_address(driver):
     try:
         btn = driver.find_element(AppiumBy.XPATH, '//android.widget.Button[@content-desc="지번, 도로명, 건물명으로 검색"]')
@@ -69,7 +72,7 @@ def click_search_by_address(driver):
     except NoSuchElementException:
         print("주소 검색 버튼을 찾을 수 없습니다.")
 
-        sleep(1)
+
 
 def click_edit_text(driver):
     try:
@@ -79,7 +82,7 @@ def click_edit_text(driver):
     except NoSuchElementException:
         print("EditText 요소를 찾을 수 없습니다.")
 
-        sleep(1)
+
 
 def input_text(driver, text):
     try:
@@ -91,7 +94,11 @@ def input_text(driver, text):
     except NoSuchElementException:
         print("EditText 요소를 찾을 수 없습니다.")
 
-        sleep(1)
+def press_enter(driver):
+    driver.press_keycode(66)
+    print("엔터 키 입력 완료")
+
+
 
 def click_first_search_result(driver):
     try:
@@ -101,7 +108,6 @@ def click_first_search_result(driver):
     except NoSuchElementException:
         print("첫 번째 검색 결과를 찾을 수 없습니다.")
 
-        sleep(1)
 
 def click_first_edittext_in_scrollview(driver):
     try:
@@ -129,27 +135,28 @@ def main():
     options.platform_version = '13'  # API 33
     options.automation_name = 'UiAutomator2'
     options.app_package = 'com.sampleapp'
-    options.app_activity = 'com.baemin.presentation.ui.tutorial.TutorialActivity'
+    options.app_activity = 'com.baemin.presentation.ui.RouterActivity'
     options.app_wait_activity = '*.*'
-    options.no_reset = True
+    options.no_reset = False
 
     driver = webdriver.Remote("http://localhost:4723", options=options)
     driver.implicitly_wait(5)
 
-    # 지금은 아무 동작도 하지 않음. 앱만 진입.
     print("✅ 배달의민족 앱 실행됨")
 
 
 
     #함수 시작할 코드
+    click_deny_permission(driver)
     handle_first_popup(driver)
     click_popup_button_layout(driver)
     click_look_around(driver)
     sleep(10)
-    click_button(driver)
+    #click_button(driver) 주소 입력완료까지 했지만 > 검색을 찾지못함함
     click_search_by_address(driver)
     click_edit_text(driver)
     input_text(driver, "광진구 화양동")
+    press_enter(driver)
     click_first_search_result(driver)
     click_first_edittext_in_scrollview(driver)
     input_text(driver, "1111호")
