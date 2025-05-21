@@ -2,6 +2,7 @@ from appium import webdriver
 from appium.webdriver.common.appiumby import AppiumBy
 from appium.options.android import UiAutomator2Options
 from selenium.common.exceptions import NoSuchElementException
+from appium.webdriver.webdriver import WebDriver
 from time import sleep
 
 def click_deny_permission(driver):
@@ -53,17 +54,6 @@ def click_look_around(driver):
     except NoSuchElementException:
         print('"둘러보기" 버튼 미노출, 다음 흐름 진행')
 
-"""
-def click_button(driver):
-    try:
-        btn = driver.find_element(AppiumBy.XPATH, '//androidx.compose.ui.platform.ComposeView/android.view.View/android.view.View/android.view.View[2]/android.widget.Button')
-        btn.click()
-        print("버튼 클릭 완료")
-    except NoSuchElementException:
-        print("버튼을 찾을 수 없습니다.")
-
-        sleep(10)
-"""
 def click_search_by_address(driver):
     try:
         btn = driver.find_element(AppiumBy.XPATH, '//android.widget.Button[@content-desc="지번, 도로명, 건물명으로 검색"]')
@@ -128,6 +118,46 @@ def click_confirm_button(driver):
         print("확인 버튼을 찾을 수 없습니다.")
 
 
+def click_search_button(driver):
+    try:
+        search_button = driver.find_element(
+            by=AppiumBy.XPATH,
+            value='//android.view.View[contains(@content-desc, "검색 버튼")]'
+        )
+        search_button.click()
+        print("✅ 음식 검색 버튼 클릭 성공")
+    except Exception as e:
+        print("❌ 음식 검색 버튼 클릭 실패:", e)
+
+def click_first_recyclerview(driver):
+    try:
+        store_views = driver.find_elements(AppiumBy.XPATH, '//androidx.recyclerview.widget.RecyclerView//android.view.View[@content-desc]')
+        if store_views:
+            store_views[0].click()
+            print("첫 번째 가게 항목 클릭 완료")
+        else:
+            print("가게 항목을 찾지 못했습니다.")  # 정상 실행, 결과 없음
+    except Exception as e:
+        print("예외 발생: RecyclerView 내 가게 항목을 찾는 중 오류 발생:", e)  # 비정상 실행
+
+# ### 첫 메뉴 클릭 부터 다시 할것
+# def click_first_menu(driver: WebDriver):
+#     # 제일 안쪽 android.view.View 중 첫번째 요소 클릭
+#     xpath = '//androidx.compose.ui.platform.ComposeView/android.view.View/android.view.View[1]/android.view.View[6]/android.view.View/android.view.View[1]'
+#     try:
+#         # 만약 여러개가 있으면 find_elements로 여러개 받고 첫번째 클릭하는 방법도 있음
+#         elements = driver.find_elements(AppiumBy.XPATH, xpath)
+#         if elements:
+#             elements[0].click()
+#             print("첫번째 메뉴 클릭 성공")
+#         else:
+#             print("첫번째 메뉴 요소를 찾지 못했습니다.")
+#     except Exception as e:
+#         print(f"첫번째 메뉴 클릭 실패: {e}")
+
+
+
+
 def main():
     options = UiAutomator2Options()
     options.platform_name = 'Android'
@@ -162,6 +192,11 @@ def main():
     input_text(driver, "1111호")
     click_confirm_button(driver)
     # 여기까지 초기 사용자의 시뮬레이션
+    click_search_button(driver)
+    input_text(driver, "국밥")
+    press_enter(driver)
+    click_first_recyclerview(driver)
+    #click_first_menu(driver)
 
 if __name__ == "__main__":
     main()
