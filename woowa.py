@@ -140,22 +140,26 @@ def click_first_recyclerview(driver):
     except Exception as e:
         print("예외 발생: RecyclerView 내 가게 항목을 찾는 중 오류 발생:", e)  # 비정상 실행
 
-# ### 첫 메뉴 클릭 부터 다시 할것
-# def click_first_menu(driver: WebDriver):
-#     # 제일 안쪽 android.view.View 중 첫번째 요소 클릭
-#     xpath = '//androidx.compose.ui.platform.ComposeView/android.view.View/android.view.View[1]/android.view.View[6]/android.view.View/android.view.View[1]'
-#     try:
-#         # 만약 여러개가 있으면 find_elements로 여러개 받고 첫번째 클릭하는 방법도 있음
-#         elements = driver.find_elements(AppiumBy.XPATH, xpath)
-#         if elements:
-#             elements[0].click()
-#             print("첫번째 메뉴 클릭 성공")
-#         else:
-#             print("첫번째 메뉴 요소를 찾지 못했습니다.")
-#     except Exception as e:
-#         print(f"첫번째 메뉴 클릭 실패: {e}")
-
-
+def click_first_portion(driver: WebDriver):
+    try:
+        max_scrolls = 5  # 최대 5번까지 스크롤
+        for i in range(max_scrolls):
+            elements = driver.find_elements(
+                AppiumBy.XPATH,
+                '//android.view.View[contains(@content-desc, "1인분")]'
+            )
+            if elements:
+                elements[0].click()
+                print("✅ 1인분 포함된 요소 중 첫 번째 클릭 성공")
+                return
+            else:
+                print(f"🔍 1인분 요소 못 찾음 → {i+1}번째 스크롤 시도")
+                # 아래로 150px 정도 스크롤 (Y 기준으로 900 → 750)
+                driver.swipe(start_x=500, start_y=900, end_x=500, end_y=750, duration=500)
+                sleep(1)  # 스크롤 후 안정화
+        print("❌ 1인분 포함된 요소를 찾지 못했습니다.")
+    except Exception as e:
+        print(f"❌ 1인분 요소 클릭 실패: {e}")
 
 
 def main():
@@ -181,22 +185,29 @@ def main():
     handle_first_popup(driver)
     click_popup_button_layout(driver)
     click_look_around(driver)
-    sleep(10)
+    sleep(1)
     #click_button(driver) 주소 입력완료까지 했지만 > 검색을 찾지못함함
     click_search_by_address(driver)
+    sleep(1)
     click_edit_text(driver)
     input_text(driver, "광진구 화양동")
     press_enter(driver)
     click_first_search_result(driver)
     click_first_edittext_in_scrollview(driver)
+    sleep(1)
     input_text(driver, "1111호")
     click_confirm_button(driver)
     # 여기까지 초기 사용자의 시뮬레이션
     click_search_button(driver)
     input_text(driver, "국밥")
     press_enter(driver)
-    click_first_recyclerview(driver)
-    #click_first_menu(driver)
+    click_first_recyclerview(driver) #가게 진입
+    click_first_portion(driver) #가게 메뉴 클릭릭
+    sleep(5)
+    print(driver.contexts)
+    print(driver.page_source)
+    
+
 
 if __name__ == "__main__":
     main()
