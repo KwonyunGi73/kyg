@@ -5,6 +5,7 @@ from selenium.common.exceptions import NoSuchElementException
 from appium.webdriver.webdriver import WebDriver
 from time import sleep
 
+
 def click_deny_permission(driver):
     try:
         deny_btn = driver.find_element("xpath", '//android.widget.Button[@resource-id="com.android.permissioncontroller:id/permission_deny_button"]')
@@ -162,6 +163,57 @@ def click_first_portion(driver: WebDriver):
         print(f"❌ 1인분 요소 클릭 실패: {e}")
 
 
+def tap_at(driver, x, y, duration_ms=100):
+    try:
+        driver.tap([(x, y)], duration=duration_ms)
+        print(f"({x}, {y}) 탭 성공(장바구니 담기기)")
+    except Exception as e:
+        print(f"❌ tap_at 오류 발생: {e}")
+
+def click_first_pocket(driver):
+    try:
+        first_result = driver.find_element(AppiumBy.XPATH, '//androidx.compose.ui.platform.ComposeView/android.view.View/android.view.View[2]/android.view.View[4]/android.widget.Button')
+        first_result.click()
+        print("장바구니 보기 클릭완료")
+    except NoSuchElementException:
+        print("장바구니 보기기 클릭실패")
+
+def click_first_pocket_order(driver):
+    try:
+        first_result = driver.find_element(AppiumBy.XPATH, '//android.widget.Button[@text="알뜰배달 주문하기"]')
+        first_result.click()
+        print("알뜰배달 주문하기 클릭성공 ")
+    except NoSuchElementException:
+        print("알뜰배달 주문하기 클릭실패")
+
+def click_first_pocket_order_loginout(driver):
+    try:
+        first_result = driver.find_element(AppiumBy.XPATH, '//android.widget.Button[@text="닫기"]')
+        first_result.click()
+        print("회원 주문 팝업 닫기")
+    except NoSuchElementException:
+        print("회원 주문 팝업 닫기 실패패")
+
+
+def click_first_pocket_order_Information_consent(driver):
+    try:
+        first_result = driver.find_element(AppiumBy.XPATH, '//android.view.View[@resource-id="root"]/android.view.View[6]/android.view.View[3]/android.widget.Image')
+        first_result.click()
+        print("내용 동의 팝업 허용")
+    except NoSuchElementException:
+        print("내용 동의 팝업 허용실패")
+
+        
+def click_first_pocket_order_payment(driver):
+    try:
+        first_result = driver.find_element(AppiumBy.XPATH, '//android.widget.Button[@resource-id="pay-cta-button"]')
+        first_result.click()
+        print("결제하기 클릭성공")
+    except NoSuchElementException:
+        print("결제하기 클릭실패")
+
+
+
 def main():
     options = UiAutomator2Options()
     options.platform_name = 'Android'
@@ -203,9 +255,15 @@ def main():
     press_enter(driver)
     click_first_recyclerview(driver) #가게 진입
     click_first_portion(driver) #가게 메뉴 클릭릭
-    sleep(5)
+    sleep(1)
+    tap_at(driver, 1129, 2920) #장바구니 담기기
+    click_first_pocket(driver)
+    click_first_pocket_order(driver)#알뜰 ,한집 선택할수 있는데 알뜰로 통일일
+    click_first_pocket_order_loginout(driver)# 회원 주문시 필요없는 함수
+    click_first_pocket_order_Information_consent(driver) #결제 정보 동의팝업
+    sleep(3)
+    click_first_pocket_order_payment(driver) # 결제하기기
     print(driver.contexts)
-    print(driver.page_source)
     
 
 
