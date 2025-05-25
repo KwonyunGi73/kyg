@@ -1,1 +1,2 @@
 kyg_key/
+"kyg_key/kyg_key.json"
