@@ -1,0 +1,74 @@
+# 워크플로우의 이름
+name: AI-Powered README Update with Gemini
+
+# 워크플로우가 실행될 조건 (main 브랜치로 Pull Request가 닫히고, Merged 되었을 때)
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  update-readme:
+    # PR이 병합(merged)되었을 때만 실행
+    if: github.event.pull_request.merged == true
+    
+    # 우분투 최신 가상 환경에서 실행
+    runs-on: ubuntu-latest
+    
+    # 워크플로우가 리포지토리 내용을 수정하고 커밋할 수 있도록 권한 부여
+    permissions:
+      contents: write
+
+    steps:
+      # 1. 현재 리포지토리의 코드를 가상 환경으로 가져옵니다 (필수 단계)
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          # README를 업데이트하고 푸시하려면 전체 git 히스토리가 필요할 수 있습니다.
+          fetch-depth: 0
+
+      # 2. Gemini AI를 이용해 PR 변경 사항을 요약하는 액션
+      #    이 액션은 Gemini API를 사용하여 코드 변경 내용을 분석합니다.
+      - name: Generate PR summary with Gemini
+        id: pr_summary
+        uses: SubstraFoundation/pr-summary-with-gemini-action@v1
+        with:
+          # 깃허브 토큰은 기본으로 제공됩니다.
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          # 3단계에서 저장했던 Gemini API 키를 여기서 사용합니다.
+          gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
+          # AI에게 내리는 명령 (프롬프트). 이 부분을 수정해서 요약 스타일을 바꿀 수 있습니다.
+          prompt: |
+            이 Pull Request의 코드 변경 사항을 분석해서, README 파일에 추가할 "## 🚀 최근 변경 사항" 섹션을 마크다운 형식으로 작성해줘.
+            주요 변경점 1~3가지를 글머리 기호(-)로 요약하고, 각 항목은 비개발자도 이해하기 쉽게 한 문장으로 간결하게 설명해줘.
+
+      # 3. AI가 생성한 요약 내용을 README 파일의 맨 위에 추가
+      - name: Update README.md
+        run: |
+          # AI가 생성한 요약 내용을 변수에 저장
+          SUMMARY="${{ steps.pr_summary.outputs.summary }}"
+          
+          # 기존 README 파일이 있다면 백업하고, 없다면 빈 백업 파일 생성
+          if [ -f README.md ]; then
+            mv README.md README.md.bak
+          else
+            touch README.md.bak
+          fi
+          
+          # 새로운 내용을 담은 README.md 파일 생성
+          echo "## 🚀 AI가 요약한 최근 변경 사항" > README.md
+          echo "" >> README.md
+          echo "$SUMMARY" >> README.md
+          echo "" >> README.md
+          echo "---" >> README.md
+          echo "" >> README.md
+          # 백업해둔 기존 README 내용과 합치기
+          cat README.md.bak >> README.md
+          # 임시 백업 파일 삭제
+          rm README.md.bak
+
+      # 4. 변경된 README.md 파일을 자동으로 커밋하고 푸시
+      - name: Commit and push changes
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "docs: AI가 README 자동 업데이트"
+          file_pattern: README.md
