@@ -80,6 +80,7 @@ jobs:
         with:
           commit_message: "docs: AI가 README 자동 업데이트"
           file_pattern: README.md
-          # 아래 두 줄을 추가하여 커밋하는 사용자 정보를 명시합니다.
           commit_user_name: GitHub Actions [bot]
           commit_user_email: 41898282+github-actions[bot]@users.noreply.github.com
+          # ↓↓↓ 이 한 줄을 추가해주세요! ↓↓↓
+          token: ${{ secrets.MY_PAT }}

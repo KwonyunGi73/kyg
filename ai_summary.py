@@ -38,4 +38,4 @@ try:
 
 except Exception as e:
     print(f"AI 요약 생성 중 오류 발생: {e}")
-    #test12
+    #test12321
