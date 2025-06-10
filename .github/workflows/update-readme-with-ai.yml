@@ -1,7 +1,7 @@
-# 워크플로우의 이름
+# 워크플로우 이름
 name: AI-Powered README Update with Gemini
 
-# 워크플로우가 실행될 조건 (main 브랜치로 Pull Request가 닫히고, Merged 되었을 때)
+# 워크플로우 실행 조건 (main 브랜치로 Pull Request가 Merged 되었을 때)
 on:
   pull_request:
     types: [closed]
@@ -19,35 +19,43 @@ jobs:
       contents: write
 
     steps:
-      # 1. 현재 리포지토리의 코드를 가상 환경으로 가져옵니다 (필수 단계)
+      # 1. 현재 리포지토리의 코드를 가져옵니다 (필수 단계)
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          # README를 업데이트하고 푸시하려면 전체 git 히스토리가 필요할 수 있습니다.
           fetch-depth: 0
 
-      # 2. Gemini AI를 이용해 PR 변경 사항을 요약하는 액션
-      #    이 액션은 Gemini API를 사용하여 코드 변경 내용을 분석합니다.
-      - name: Generate PR summary with Gemini
-        id: pr_summary
-        uses: SubstraFoundation/pr-summary-with-gemini-action@v1
+      # 2. 파이썬 환경 설정
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
-          # 깃허브 토큰은 기본으로 제공됩니다.
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          # 3단계에서 저장했던 Gemini API 키를 여기서 사용합니다.
-          gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
-          # AI에게 내리는 명령 (프롬프트). 이 부분을 수정해서 요약 스타일을 바꿀 수 있습니다.
-          prompt: |
-            이 Pull Request의 코드 변경 사항을 분석해서, README 파일에 추가할 "## 🚀 최근 변경 사항" 섹션을 마크다운 형식으로 작성해줘.
-            주요 변경점 1~3가지를 글머리 기호(-)로 요약하고, 각 항목은 비개발자도 이해하기 쉽게 한 문장으로 간결하게 설명해줘.
+          python-version: '3.12' # 사용하시는 파이썬 버전에 맞게
 
-      # 3. AI가 생성한 요약 내용을 README 파일의 맨 위에 추가
+      # 3. 파이썬 라이브러리 설치 (Gemini API 사용을 위해)
+      - name: Install dependencies
+        run: pip install google-generativeai
+
+      # 4. Gemini AI 요약 스크립트 실행
+      - name: Generate summary with Gemini script
+        id: gemini_summary # 이 스텝의 ID
+        run: |
+          # ai_summary.py를 실행하고, 그 결과를 GITHUB_OUTPUT에 저장
+          # 여러 줄의 결과도 처리할 수 있도록 특수한 형식을 사용합니다.
+          echo "summary<<EOF" >> $GITHUB_OUTPUT
+          python ai_summary.py >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+        env:
+          # 깃허브 Secrets에 저장한 API 키를 환경 변수로 스크립트에 전달
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GITHUB_EVENT_PATH: ${{ github.event_path }}
+
+      # 5. AI가 생성한 요약 내용을 README 파일의 맨 위에 추가
       - name: Update README.md
         run: |
-          # AI가 생성한 요약 내용을 변수에 저장
-          SUMMARY="${{ steps.pr_summary.outputs.summary }}"
-          
-          # 기존 README 파일이 있다면 백업하고, 없다면 빈 백업 파일 생성
+          # 4단계에서 저장한 요약 내용을 가져옵니다.
+          SUMMARY="${{ steps.gemini_summary.outputs.summary }}"
+
+          # 기존 README 파일이 있다면 백업
           if [ -f README.md ]; then
             mv README.md README.md.bak
           else
@@ -66,7 +74,7 @@ jobs:
           # 임시 백업 파일 삭제
           rm README.md.bak
 
-      # 4. 변경된 README.md 파일을 자동으로 커밋하고 푸시
+      # 6. 변경된 README.md 파일을 자동으로 커밋하고 푸시
       - name: Commit and push changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
