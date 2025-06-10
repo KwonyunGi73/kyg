@@ -1,80 +1,58 @@
 # 워크플로우 이름
 name: AI-Powered README Update with Gemini
 
-# 워크플로우 실행 조건 (main 브랜치로 Pull Request가 Merged 되었을 때)
 on:
   pull_request:
     types: [closed]
 
 jobs:
   update-readme:
-    # PR이 병합(merged)되었을 때만 실행
     if: github.event.pull_request.merged == true
-    
-    # 우분투 최신 가상 환경에서 실행
     runs-on: ubuntu-latest
-    
-    # 워크플로우가 리포지토리 내용을 수정하고 커밋할 수 있도록 권한 부여
     permissions:
       contents: write
 
     steps:
-      # 1. 현재 리포지토리의 코드를 가져옵니다 (필수 단계)
+      # --- 1. 이 Checkout code 부분을 수정합니다 ---
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          # ↓↓↓ 여기에 MY_PAT를 사용하도록 지정합니다. ↓↓↓
+          token: ${{ secrets.MY_PAT }}
 
-      # 2. 파이썬 환경 설정
+      # --- 2. Gemini AI 요약 스크립트 실행 (이 부분은 수정 없음) ---
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.12' # 사용하시는 파이썬 버전에 맞게
-
-      # 3. 파이썬 라이브러리 설치 (Gemini API 사용을 위해)
+          python-version: '3.12'
       - name: Install dependencies
         run: pip install google-generativeai
-
-      # 4. Gemini AI 요약 스크립트 실행
       - name: Generate summary with Gemini script
-        id: gemini_summary # 이 스텝의 ID
+        id: gemini_summary
         run: |
-          # ai_summary.py를 실행하고, 그 결과를 GITHUB_OUTPUT에 저장
-          # 여러 줄의 결과도 처리할 수 있도록 특수한 형식을 사용합니다.
           echo "summary<<EOF" >> $GITHUB_OUTPUT
           python ai_summary.py >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
         env:
-          # 깃허브 Secrets에 저장한 API 키를 환경 변수로 스크립트에 전달
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GITHUB_EVENT_PATH: ${{ github.event_path }}
 
-      # 5. AI가 생성한 요약 내용을 README 파일의 맨 위에 추가
+      # --- 3. README 파일 업데이트 (이 부분도 수정 없음) ---
       - name: Update README.md
         run: |
-          # 4단계에서 저장한 요약 내용을 가져옵니다.
           SUMMARY="${{ steps.gemini_summary.outputs.summary }}"
-
-          # 기존 README 파일이 있다면 백업
-          if [ -f README.md ]; then
-            mv README.md README.md.bak
-          else
-            touch README.md.bak
-          fi
-          
-          # 새로운 내용을 담은 README.md 파일 생성
+          if [ -f README.md ]; then mv README.md README.md.bak; else touch README.md.bak; fi
           echo "## 🚀 AI가 요약한 최근 변경 사항" > README.md
           echo "" >> README.md
           echo "$SUMMARY" >> README.md
           echo "" >> README.md
           echo "---" >> README.md
           echo "" >> README.md
-          # 백업해둔 기존 README 내용과 합치기
           cat README.md.bak >> README.md
-          # 임시 백업 파일 삭제
           rm README.md.bak
 
-      # 6. 변경된 README.md 파일을 자동으로 커밋하고 푸시
+      # --- 4. Commit and push changes 단계에서는 token 라인을 제거합니다 ---
       - name: Commit and push changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
@@ -82,5 +60,3 @@ jobs:
           file_pattern: README.md
           commit_user_name: GitHub Actions [bot]
           commit_user_email: 41898282+github-actions[bot]@users.noreply.github.com
-          # ↓↓↓ 이 한 줄을 추가해주세요! ↓↓↓
-          token: ${{ secrets.MY_PAT }}
