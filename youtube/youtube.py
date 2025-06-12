@@ -287,4 +287,4 @@ except Exception as e:
 
 print("▶ YouTube 자동화 종료")
 # driver.quit() # 실제 자동화 완료 후에는 주석 해제하여 드라이버 종료
-# Test12344533d23sddssdsd
+# Test12344533d23sddssdsd250613
