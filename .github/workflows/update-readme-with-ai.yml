@@ -27,8 +27,8 @@ jobs:
         run: pip install google-generativeai
 
       # 4. AI 스크립트 실행하고 모든 결과 로그에 직접 출력
-      - name: Run and Display Output of ai_summary.py
-        run: python ai_summary.py
+      - name: Run and Display Output of ai_test.py
+        run: python youtube/ai_test.py 
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GITHUB_EVENT_PATH: ${{ github.event_path }}
