@@ -25,7 +25,10 @@ try:
 
     # Gemini API 설정을 합니다.
     genai.configure(api_key=api_key)
-    model = genai.GenerativeModel('gemini-1.5-flash-latest')
+    
+    model_name = 'gemini-1.5-flash-latest' # 모델 이름을 변수로 지정
+    model = genai.GenerativeModel(model_name)
+    print(f"✅ 사용된 AI 모델: {model_name}") # <--- 이 print 문을 추가!
 
     # AI에게 내릴 명령(프롬프트)을 구체적으로 작성합니다.
     prompt = f"""
