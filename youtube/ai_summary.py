@@ -25,7 +25,10 @@ try:
 
     # Gemini API 설정을 합니다.
     genai.configure(api_key=api_key)
-    model = genai.GenerativeModel('gemini-1.5-flash-latest')
+    
+    model_name = 'gemini-1.5-flash-latest' # 모델 이름을 변수로 지정
+    model = genai.GenerativeModel(model_name)
+    print(f"✅ 사용된 AI 모델: {model_name}") # <--- 이 print 문을 추가!
 
     # AI에게 내릴 명령(프롬프트)을 구체적으로 작성합니다.
     prompt = f"""
@@ -47,5 +50,5 @@ try:
 
 except Exception as e:
     # 만약 이 스크립트 실행 중 오류가 발생하면, 오류 메시지를 출력합니다.
-    # 이 메시지는 깃허브 액션 로그에 남아서 디버깅에 도움이 됩니다.d
+    # 이 메시지는 깃허브 액션 로그에 남아서 디버깅에 도움이 됩니다.d3sdd
     print(f"AI 요약 생성 중 오류 발생: {e}")
