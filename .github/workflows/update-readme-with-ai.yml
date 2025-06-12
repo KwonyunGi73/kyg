@@ -1,4 +1,4 @@
-# 디버깅용 워크플로우 이름
+# 디버깅용 워크플로우
 name: DEBUG - Run AI Summary Script
 
 on:
@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. 코드 가져오기 (기본)
+      # 1. 코드를 가져옵니다 (PAT 사용 부분 없음)
       - name: Checkout code
         uses: actions/checkout@v4
 
